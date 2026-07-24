@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMO OS</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div id="bmo-container">
+        <div id="screen">
+            <div id="scanlines"></div>
+
+            <!-- Boot Sequence -->
+            <div id="boot-screen" class="screen-layer">
+                <h1>BMO OS</h1>
+                <p id="boot-text">Booting...</p>
+                <div class="progress-bar">
+                    <div id="boot-progress"></div>
+                </div>
+                <br>
+                <p id="boot-prompt" class="hidden mt-8 animate-pulse text-lg cursor-pointer">Haz clic o presiona una
+                    tecla para encender</p>
+            </div>
+
+            <!-- Face (Idle) -->
+            <div id="face-screen" class="screen-layer hidden">
+                <div id="face-container">
+                    <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Normal Eyes -->
+                        <g id="eyes">
+                            <circle id="left-eye" cx="250" cy="250" r="25" fill="#2c4c3b" />
+                            <circle id="right-eye" cx="550" cy="250" r="25" fill="#2c4c3b" />
+                        </g>
+
+                        <!-- Sad Eyes (hidden) -->
+                        <g id="sad-eyes" opacity="0">
+                            <path d="M 210 250 Q 250 220 280 250" stroke="#2c4c3b" stroke-width="16"
+                                stroke-linecap="round" fill="none" />
+                            <path d="M 520 250 Q 550 220 590 250" stroke="#2c4c3b" stroke-width="16"
+                                stroke-linecap="round" fill="none" />
+                        </g>
+
+                        <!-- Cheeks -->
+                        <g id="cheeks" opacity="0">
+                            <circle cx="180" cy="300" r="30" fill="#ffb6c1" opacity="0.6" />
+                            <circle cx="620" cy="300" r="30" fill="#ffb6c1" opacity="0.6" />
+                        </g>
+
+                        <!-- Tears (hidden) -->
+                        <g id="tears-group" opacity="0" fill="#58d4f4">
+                            <path class="tear-drop" d="M 230 290 L 225 305 L 235 305 Z" />
+                            <path class="tear-drop" d="M 270 280 L 265 295 L 275 295 Z" />
+                            <path class="tear-drop" d="M 530 280 L 525 295 L 535 295 Z" />
+                            <path class="tear-drop" d="M 570 290 L 565 305 L 575 305 Z" />
+                        </g>
+
+                        <!-- Zzz Particles (hidden) -->
+                        <g id="zzz-group" opacity="0">
+                            <text class="zzz" x="500" y="200" font-family="'Courier New', monospace" font-size="40"
+                                font-weight="bold" fill="#2c4c3b" opacity="0">Z</text>
+                            <text class="zzz" x="500" y="200" font-family="'Courier New', monospace" font-size="30"
+                                font-weight="bold" fill="#2c4c3b" opacity="0">Z</text>
+                            <text class="zzz" x="500" y="200" font-family="'Courier New', monospace" font-size="20"
+                                font-weight="bold" fill="#2c4c3b" opacity="0">z</text>
+                        </g>
+
+                        <!-- Normal Mouth -->
+                        <g id="mouth-group">
+                            <path id="mouth" d="M 350 320 Q 400 360 450 320" stroke="#2c4c3b" stroke-width="12"
+                                stroke-linecap="round" fill="none" />
+                        </g>
+
+                        <!-- Half Open Mouth (for talking) -->
+                        <g id="half-open-mouth" opacity="0">
+                            <path d="M 370 350 C 370 300 430 300 430 350 C 430 370 370 370 370 350 Z" fill="#257545"
+                                stroke="#2c4c3b" stroke-width="8" stroke-linejoin="round" />
+                        </g>
+
+                        <!-- Laughing Mouth (hidden) -->
+                        <g id="laughing-mouth" opacity="0">
+                            <defs>
+                                <clipPath id="laugh-clip">
+                                    <path d="M 320 310 Q 400 325 480 310 C 480 410 320 410 320 310 Z" />
+                                </clipPath>
+                            </defs>
+
+                            <!-- Fondo de la boca -->
+                            <path d="M 320 310 Q 400 325 480 310 C 480 410 320 410 320 310 Z" fill="#257545" />
+
+                            <!-- Elementos recortados para no salirse de la boca -->
+                            <g clip-path="url(#laugh-clip)">
+                                <!-- Dientes -->
+                                <path d="M 300 300 L 500 300 L 500 330 Q 400 340 300 330 Z" fill="#ffffff" />
+                                <!-- Lengua -->
+                                <ellipse cx="400" cy="395" rx="55" ry="35" fill="#67b973" />
+                            </g>
+
+                            <!-- Borde dibujado encima para que quede limpio -->
+                            <path d="M 320 310 Q 400 325 480 310 C 480 410 320 410 320 310 Z" fill="none"
+                                stroke="#2c4c3b" stroke-width="8" stroke-linejoin="round" />
+                        </g>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Menu -->
+            <div id="menu-screen" class="screen-layer hidden">
+                <h2>BMO GAMES</h2>
+                <ul id="menu-list">
+                    <li class="menu-item selected" data-game="snake">Snake</li>
+                    <li class="menu-item" data-game="flappy">Flappy Bird</li>
+                    <li class="menu-item" data-game="pacman">Pac-Man Lite</li>
+                </ul>
+                <div class="menu-instructions">W/S: Mover | J: Seleccionar | L: Salir</div>
+            </div>
+
+            <!-- Game Canvas -->
+            <div id="game-screen" class="screen-layer hidden">
+                <canvas id="game-canvas" width="640" height="480"></canvas>
+            </div>
+
+            <div id="close-instruction" class="hidden">Presiona L o Select para salir del juego</div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/controller.js"></script>
+    <script src="js/animations.js"></script>
+    <script src="js/bmo.js"></script>
+    <script src="js/games/game-engine.js"></script>
+    <script src="js/games/snake.js"></script>
+    <script src="js/games/flappy-bird.js"></script>
+    <script src="js/games/pacman-lite.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
