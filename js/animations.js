@@ -1,231 +1,342 @@
+/**
+ * BMO OS - BmoAnimations & AnimationManager
+ * 
+ * Prioridades:
+ *   0 = Nada activo
+ *   1 = Idle (parpadeo, mirada)
+ *   2 = Emoción (reír, llorar, bailar)
+ *   3 = Sueño / Salvapantallas
+ *
+ * Nota: El giro Konami (prioridad 4) NO usa GSAP. Usa CSS @keyframes
+ * directamente en #face-container, así es imposible que colisione.
+ */
+class AnimationManager {
+    constructor() {
+        this.currentPriority = 0;
+        this.currentAnimation = null;
+        this._locked = false;
+    }
+
+    play(name, priority, actionFn) {
+        if (this._locked && priority <= this.currentPriority) {
+            return false;
+        }
+        if (priority < this.currentPriority) {
+            return false;
+        }
+
+        this._killAllFaceTweens();
+
+        this.currentPriority = priority;
+        this.currentAnimation = name;
+        this._locked = (priority >= 3);
+
+        if (typeof actionFn === 'function') {
+            const done = () => {
+                if (this.currentAnimation === name) {
+                    this.currentPriority = 0;
+                    this.currentAnimation = null;
+                    this._locked = false;
+                }
+            };
+            actionFn(done);
+        }
+
+        return true;
+    }
+
+    forceStop() {
+        this._killAllFaceTweens();
+        this.currentPriority = 0;
+        this.currentAnimation = null;
+        this._locked = false;
+    }
+
+    canPlay(priority) {
+        if (this._locked && priority <= this.currentPriority) return false;
+        return priority >= this.currentPriority;
+    }
+
+    _killAllFaceTweens() {
+        const ids = [
+            'face-container', 'eyes', 'sad-eyes', 'left-eye', 'right-eye',
+            'mouth-group', 'mouth', 'laughing-mouth', 'half-open-mouth',
+            'tears-group', 'zzz-group'
+        ];
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) gsap.killTweensOf(el);
+        });
+        document.querySelectorAll('.tear-drop').forEach(el => gsap.killTweensOf(el));
+        document.querySelectorAll('.zzz').forEach(el => gsap.killTweensOf(el));
+    }
+}
+
+const animManager = new AnimationManager();
+
+
 class BmoAnimations {
+
+    /* ============ PRIORIDAD 1: IDLE ============ */
+
     static blink(eyes) {
-        // Usa GSAP para achicar en Y simulando parpadeo
-        gsap.to([eyes.left, eyes.right], {
-            scaleY: 0.1,
-            transformOrigin: "center center",
-            duration: 0.1,
-            yoyo: true,
-            repeat: 1
+        if (!eyes || !eyes.left || !eyes.right) return;
+        if (!animManager.canPlay(1)) return;
+
+        animManager.play('blink', 1, (done) => {
+            gsap.to([eyes.left, eyes.right], {
+                scaleY: 0.1,
+                scaleX: 1,
+                transformOrigin: "center center",
+                duration: 0.1,
+                yoyo: true,
+                repeat: 1,
+                onComplete: done
+            });
         });
     }
 
     static look(eyes, x, y) {
-        gsap.to([eyes.left, eyes.right], {
-            x: x,
-            y: y,
-            duration: 0.5,
-            ease: "power2.out"
+        if (!eyes || !eyes.left || !eyes.right) return;
+        if (!animManager.canPlay(1)) return;
+
+        animManager.play('look', 1, (done) => {
+            gsap.to([eyes.left, eyes.right], {
+                x: x, y: y,
+                scaleX: 1, scaleY: 1,
+                transformOrigin: "center center",
+                duration: 0.5,
+                ease: "power2.out",
+                onComplete: done
+            });
         });
     }
 
     static resetLook(eyes) {
-        gsap.to([eyes.left, eyes.right], {
-            x: 0,
-            y: 0,
-            duration: 0.5,
-            ease: "power2.out"
+        if (!eyes || !eyes.left || !eyes.right) return;
+        gsap.killTweensOf([eyes.left, eyes.right]);
+        gsap.set([eyes.left, eyes.right], {
+            x: 0, y: 0, scaleX: 1, scaleY: 1,
+            transformOrigin: "center center"
         });
     }
 
     static changeMouth(mouthElement, newPathData) {
+        if (!mouthElement) return;
+        if (!animManager.canPlay(1)) return;
+        gsap.killTweensOf(mouthElement);
         gsap.to(mouthElement, {
             attr: { d: newPathData },
-            duration: 0.3,
-            ease: "power2.out",
-            overwrite: "auto"
+            duration: 0.25,
+            ease: "power2.out"
         });
     }
 
-    static talk(elements) {
-        // Dummy property tween to act as a loop that we can easily kill
-        gsap.to(elements.mouthGroup, {
-            rotation: "+=0", 
-            duration: 0.1, // velocidad de cada sílaba
-            repeat: -1,
-            overwrite: "auto",
-            onRepeat: () => {
-                const r = Math.random();
-                let f;
-                if (r < 0.25) f = { c: 1, h: 0, o: 0 }; // Closed (25% chance)
-                else if (r < 0.6) f = { c: 0, h: 1, o: 0 }; // Half-open (35% chance)
-                else f = { c: 0, h: 0, o: 1 }; // Open (40% chance)
 
-                gsap.set(elements.mouthGroup, { opacity: f.c });
-                gsap.set(elements.halfOpenMouth, { opacity: f.h });
-                gsap.set(elements.laughingMouth, { opacity: f.o });
-            }
+    /* ============ PRIORIDAD 2: EMOCIONES ============ */
+
+    static talk(elements) {
+        animManager.play('talk', 2, () => {
+            gsap.to(elements.mouthGroup, {
+                rotation: "+=0",
+                duration: 0.1,
+                repeat: -1,
+                onRepeat: () => {
+                    const r = Math.random();
+                    if (r < 0.25) {
+                        gsap.set(elements.mouthGroup, { opacity: 1 });
+                        gsap.set(elements.halfOpenMouth, { opacity: 0 });
+                        gsap.set(elements.laughingMouth, { opacity: 0 });
+                    } else if (r < 0.6) {
+                        gsap.set(elements.mouthGroup, { opacity: 0 });
+                        gsap.set(elements.halfOpenMouth, { opacity: 1 });
+                        gsap.set(elements.laughingMouth, { opacity: 0 });
+                    } else {
+                        gsap.set(elements.mouthGroup, { opacity: 0 });
+                        gsap.set(elements.halfOpenMouth, { opacity: 0 });
+                        gsap.set(elements.laughingMouth, { opacity: 1 });
+                    }
+                }
+            });
         });
     }
 
     static shout(elements) {
-        // Abre la boca grande estáticamente (para gritos o risa sin tanto rebote si no es carcajada de juego)
-        gsap.to(elements.mouthGroup, { opacity: 0, duration: 0.1, overwrite: "auto" });
-        gsap.to(elements.halfOpenMouth, { opacity: 0, duration: 0.1, overwrite: "auto" });
-        gsap.to(elements.laughingMouth, { opacity: 1, duration: 0.1, overwrite: "auto" });
-        
-        // Abre un poco los ojos por la sorpresa/grito
-        gsap.to(elements.eyesGroup, { opacity: 1, scaleY: 1.2, duration: 0.2, overwrite: "auto" });
+        animManager.play('shout', 2, () => {
+            gsap.set(elements.mouthGroup, { opacity: 0 });
+            gsap.set(elements.halfOpenMouth, { opacity: 0 });
+            gsap.set(elements.laughingMouth, { opacity: 1 });
+            gsap.to(elements.eyesGroup, {
+                opacity: 1, scaleY: 1.15, scaleX: 1,
+                transformOrigin: "center center", duration: 0.2
+            });
+        });
     }
 
     static cry(elements) {
-        gsap.to(elements.eyesGroup, { opacity: 0, duration: 0.2, overwrite: "auto" });
-        gsap.to(elements.sadEyesGroup, { opacity: 1, duration: 0.2, overwrite: "auto" });
-        
-        BmoAnimations.changeMouth(elements.mouthPath, elements.sadMouthData);
-        
-        gsap.to(elements.tearsGroup, { opacity: 1, duration: 0.2, overwrite: "auto" });
-        
-        // Animate tears falling (yoyo effect)
-        gsap.fromTo(elements.tearDrops, 
-            { y: -10, opacity: 0 }, 
-            { 
-                y: 20, 
-                opacity: 1, 
-                duration: 0.6, 
-                stagger: 0.15, 
-                repeat: -1, 
-                yoyo: true,
-                ease: "sine.inOut",
-                overwrite: "auto"
+        animManager.play('cry', 2, () => {
+            gsap.set(elements.eyesGroup, { opacity: 0 });
+            gsap.set(elements.sadEyesGroup, { opacity: 1 });
+            gsap.set(elements.mouthGroup, { opacity: 1 });
+            gsap.set(elements.laughingMouth, { opacity: 0 });
+            gsap.set(elements.halfOpenMouth, { opacity: 0 });
+
+            if (elements.mouthPath) {
+                gsap.to(elements.mouthPath, {
+                    attr: { d: elements.sadMouthData },
+                    duration: 0.3
+                });
             }
-        );
+
+            gsap.set(elements.tearsGroup, { opacity: 1 });
+            gsap.fromTo(elements.tearDrops,
+                { y: -10, opacity: 0 },
+                {
+                    y: 20, opacity: 1,
+                    duration: 0.6, stagger: 0.15,
+                    repeat: -1, yoyo: true, ease: "sine.inOut"
+                }
+            );
+        });
     }
 
     static laugh(elements) {
-        gsap.to(elements.mouthGroup, { opacity: 0, duration: 0.1, overwrite: "auto" });
-        gsap.to(elements.laughingMouth, { opacity: 1, duration: 0.1, overwrite: "auto" });
-        
-        // Eyes squint slightly (scaleY down) and ensure they are visible
-        gsap.to(elements.eyesGroup, { opacity: 1, scaleY: 0.8, duration: 0.2, overwrite: "auto" });
-
-        // Bouncing head animation
-        gsap.to(elements.faceContainer, {
-            y: -15,
-            duration: 0.15,
-            yoyo: true,
-            repeat: -1,
-            ease: "sine.inOut",
-            overwrite: "auto"
+        animManager.play('laugh', 2, () => {
+            gsap.set(elements.mouthGroup, { opacity: 0 });
+            gsap.set(elements.halfOpenMouth, { opacity: 0 });
+            gsap.set(elements.laughingMouth, { opacity: 1 });
+            gsap.to(elements.eyesGroup, {
+                opacity: 1, scaleY: 0.85, scaleX: 1,
+                transformOrigin: "center center", duration: 0.2
+            });
+            gsap.to(elements.faceContainer, {
+                y: -15,
+                duration: 0.15,
+                yoyo: true, repeat: -1, ease: "sine.inOut"
+            });
         });
     }
+
+    static dance(elements) {
+        animManager.play('dance', 2, () => {
+            gsap.set(elements.mouthGroup, { opacity: 0 });
+            gsap.set(elements.halfOpenMouth, { opacity: 0 });
+            gsap.set(elements.laughingMouth, { opacity: 1 });
+            gsap.to(elements.eyesGroup, {
+                opacity: 1, scaleY: 0.9, scaleX: 1,
+                transformOrigin: "center center", duration: 0.2
+            });
+            gsap.to(elements.faceContainer, {
+                y: -25, scaleY: 1.04,
+                duration: 0.22,
+                yoyo: true, repeat: -1, ease: "sine.inOut",
+                transformOrigin: "50% 50%"
+            });
+        });
+    }
+
+
+    /* ============ PRIORIDAD 3: SUEÑO ============ */
 
     static sleep(elements) {
-        // Ojos cerrados más naturales (se afinan mucho más y más lento simulando pesadez)
-        gsap.to(elements.eyesGroup, { 
-            opacity: 1, 
-            scaleY: 0.03, 
-            duration: 1.5, 
-            ease: "power2.inOut",
-            overwrite: "auto" 
+        animManager.play('sleep', 3, () => {
+            gsap.set(elements.laughingMouth, { opacity: 0 });
+            gsap.set(elements.halfOpenMouth, { opacity: 0 });
+            gsap.set(elements.mouthGroup, { opacity: 1 });
+
+            gsap.to(elements.eyesGroup, {
+                opacity: 1, scaleY: 0.05, scaleX: 1,
+                transformOrigin: "center center",
+                duration: 1.8, ease: "sine.inOut"
+            });
+
+            if (elements.mouthPath) {
+                gsap.to(elements.mouthPath, {
+                    attr: { d: "M 370 338 Q 400 348 430 338" },
+                    duration: 1.2, ease: "sine.inOut"
+                });
+            }
+
+            // Oscurecer TODA la pantalla con clase CSS
+            const container = document.getElementById('bmo-container');
+            if (container) {
+                container.classList.remove('bmo-awake');
+                container.classList.add('bmo-sleeping');
+            }
+
+            // Respiración
+            gsap.to(elements.faceContainer, {
+                y: 8, scaleY: 0.98, scaleX: 1.01,
+                duration: 3.2,
+                yoyo: true, repeat: -1, ease: "sine.inOut",
+                transformOrigin: "50% 50%"
+            });
+
+            // Zzz flotantes con desvanecimiento
+            gsap.to(elements.zzzGroup, { opacity: 1, duration: 1 });
+            gsap.fromTo(elements.zzzParticles,
+                { y: 0, scale: 0.3, opacity: 0 },
+                {
+                    y: -140, scale: 1.5,
+                    keyframes: [
+                        { opacity: 0, percent: 0 },
+                        { opacity: 1, percent: 30 },
+                        { opacity: 0, percent: 100 }
+                    ],
+                    duration: 3.6, stagger: 1.2,
+                    repeat: -1, ease: "power1.out",
+                    transformOrigin: "center center"
+                }
+            );
         });
-        
-        // Boca relajada (línea recta un poco más abajo)
-        BmoAnimations.changeMouth(elements.mouthPath, "M 380 345 Q 400 345 420 345");
-        
-        // Respiración orgánica (se infla ligeramente y baja más lento)
-        gsap.to(elements.faceContainer, {
-            y: 12,
-            scaleX: 1.02,
-            scaleY: 0.98,
-            duration: 3,
-            yoyo: true,
-            repeat: -1,
-            ease: "sine.inOut",
-            overwrite: "auto"
-        });
-
-        // Oscurecer la pantalla de forma muy suave
-        gsap.to(document.getElementById('screen'), { filter: 'brightness(0.5)', duration: 3 });
-        
-        // Animar las partículas Zzz de forma mucho más fluida
-        gsap.to(elements.zzzGroup, { opacity: 1, duration: 1 });
-        
-        // 1. Subida y crecimiento orgánico, girando un poco
-        gsap.fromTo(elements.zzzParticles, 
-            { y: 0, scale: 0.2, rotation: -10 },
-            {
-                y: -130, 
-                scale: 1.6,
-                rotation: 15,
-                duration: 4,
-                stagger: 1.5,
-                repeat: -1,
-                ease: "power1.out",
-                overwrite: "auto",
-                transformOrigin: "center center"
-            }
-        );
-
-        // 2. Movimiento oscilante en X (como hojas cayendo/subiendo)
-        gsap.fromTo(elements.zzzParticles,
-            { x: 0 },
-            {
-                x: 40,
-                duration: 2,
-                stagger: 1.5,
-                repeat: -1,
-                yoyo: true,
-                ease: "sine.inOut",
-                overwrite: "auto"
-            }
-        );
-
-        // 3. Desvanecimiento (aparecen de a poco, desaparecen al final)
-        gsap.fromTo(elements.zzzParticles,
-            { opacity: 0 },
-            {
-                opacity: 1,
-                duration: 2,
-                stagger: 1.5,
-                repeat: -1,
-                yoyo: true,
-                ease: "sine.inOut",
-                overwrite: "auto"
-            }
-        );
     }
 
-    static resetEmotion(elements) {
-        // Kill ALL active tweens on these elements to prevent conflicts
-        const allElements = [
-            elements.eyesGroup, elements.sadEyesGroup, 
-            elements.mouthGroup,
-            elements.laughingMouth,
-            elements.halfOpenMouth,
-            elements.tearsGroup, elements.mouthPath,
-            elements.zzzGroup
-        ];
-        gsap.killTweensOf(allElements);
-        if (elements.eyes) {
-            gsap.killTweensOf([elements.eyes.left, elements.eyes.right]);
-            gsap.to([elements.eyes.left, elements.eyes.right], { x: 0, y: 0, duration: 0.2 });
-        }
-        if (elements.tearDrops) gsap.killTweensOf(elements.tearDrops);
-        if (elements.zzzParticles) gsap.killTweensOf(elements.zzzParticles);
-        
-        // Solo matamos la animación en 'y' del faceContainer para no cortar giros del easter egg abruptamente,
-        // o si los cortamos, nos aseguramos de resetear rotation y scale también.
-        gsap.killTweensOf(elements.faceContainer);
-        
-        // Reset face container pos and rotation/scale
-        gsap.to(elements.faceContainer, { y: 0, rotation: 0, scale: 1, duration: 0.2 });
-        
-        // Reset eyes
-        gsap.to(elements.eyesGroup, { opacity: 1, scaleY: 1, duration: 0.2 });
-        gsap.to(elements.sadEyesGroup, { opacity: 0, duration: 0.2 });
-        
-        // Reset mouth
-        gsap.to(elements.mouthGroup, { opacity: 1, duration: 0.2 });
-        gsap.to(elements.laughingMouth, { opacity: 0, duration: 0.2 });
-        gsap.to(elements.halfOpenMouth, { opacity: 0, duration: 0.2 });
-        BmoAnimations.changeMouth(elements.mouthPath, elements.normalMouthData);
-        
-        // Hide tears and zzz
-        gsap.to(elements.tearsGroup, { opacity: 0, duration: 0.2 });
-        gsap.to(elements.zzzGroup, { opacity: 0, duration: 0.2 });
 
-        // Reset screen brightness (in case of waking up from sleep)
-        gsap.to(document.getElementById('screen'), { filter: 'brightness(1)', duration: 0.5 });
+    /* ============ RESETEO TOTAL ============ */
+
+    static resetEmotion(elements) {
+        animManager.forceStop();
+
+        const container = document.getElementById('bmo-container');
+
+        if (elements.faceContainer) {
+            gsap.set(elements.faceContainer, {
+                y: 0, x: 0, scale: 1, scaleX: 1, scaleY: 1, rotation: 0,
+                transformOrigin: "50% 50%"
+            });
+        }
+
+        gsap.set(elements.eyesGroup, {
+            opacity: 1, scaleY: 1, scaleX: 1,
+            transformOrigin: "center center"
+        });
+        gsap.set(elements.sadEyesGroup, { opacity: 0 });
+        if (elements.eyes) {
+            gsap.set([elements.eyes.left, elements.eyes.right], {
+                x: 0, y: 0, scaleX: 1, scaleY: 1,
+                transformOrigin: "center center"
+            });
+        }
+
+        gsap.set(elements.mouthGroup, { opacity: 1, rotation: 0 });
+        gsap.set(elements.laughingMouth, { opacity: 0 });
+        gsap.set(elements.halfOpenMouth, { opacity: 0 });
+        if (elements.mouthPath) {
+            gsap.set(elements.mouthPath, { attr: { d: elements.normalMouthData } });
+        }
+
+        gsap.set(elements.tearsGroup, { opacity: 0 });
+        if (elements.tearDrops) gsap.set(elements.tearDrops, { y: 0, opacity: 0 });
+
+        gsap.set(elements.zzzGroup, { opacity: 0 });
+        if (elements.zzzParticles) {
+            gsap.set(elements.zzzParticles, { y: 0, x: 0, opacity: 0, scale: 1 });
+        }
+
+        // Restaurar brillo con clase CSS
+        if (container) {
+            container.classList.remove('bmo-sleeping');
+            container.classList.add('bmo-awake');
+        }
     }
 }

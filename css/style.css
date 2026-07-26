@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
 :root {
-    --bmo-screen: #d0f0c0; /* Light green/teal */
+    --bmo-screen: #d0f0c0;
     --bmo-screen-dark: #8fad8a;
     --bmo-text: #2c4c3b;
     --bmo-highlight: #e8f8e0;
@@ -11,10 +11,11 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    user-select: none;
 }
 
 body {
-    background-color: #111;
+    background-color: #000;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -25,17 +26,15 @@ body {
 }
 
 #bmo-container {
-    width: 100%;
-    height: 100%;
-    max-width: 100vw;
-    max-height: 100vh;
+    width: 100vw;
+    height: 100vh;
     background-color: var(--bmo-screen);
     position: relative;
-    /* Responsive aspect ratio setup: will grow to fit 16:9 or 4:3 */
     display: flex;
     justify-content: center;
     align-items: center;
-    box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.2);
+    box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.25);
+    transition: none; /* Sin transiciones CSS que peleen con GSAP */
 }
 
 #screen {
@@ -48,7 +47,7 @@ body {
     align-items: center;
 }
 
-/* CRT Scanlines Effect */
+/* CRT Scanlines */
 #scanlines {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -56,13 +55,35 @@ body {
         to bottom,
         rgba(255, 255, 255, 0),
         rgba(255, 255, 255, 0) 50%,
-        rgba(0, 0, 0, 0.1) 50%,
-        rgba(0, 0, 0, 0.1)
+        rgba(0, 0, 0, 0.12) 50%,
+        rgba(0, 0, 0, 0.12)
     );
     background-size: 100% 4px;
-    z-index: 10;
+    z-index: 20;
     pointer-events: none;
     opacity: 0.6;
+}
+
+/* Gamepad HUD */
+#gamepad-hud {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background-color: var(--bmo-text);
+    color: var(--bmo-highlight);
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    z-index: 30;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+#gamepad-hud.show {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .screen-layer {
@@ -76,7 +97,7 @@ body {
     justify-content: center;
     align-items: center;
     z-index: 5;
-    transition: opacity 0.3s;
+    transition: opacity 0.3s ease;
 }
 
 .hidden {
@@ -87,17 +108,18 @@ body {
 
 /* Boot Screen */
 #boot-screen h1 {
-    font-size: 3rem;
-    margin-bottom: 20px;
-    text-shadow: 2px 2px 0px var(--bmo-highlight);
+    font-size: 3.5rem;
+    margin-bottom: 25px;
+    text-shadow: 3px 3px 0px var(--bmo-highlight);
 }
 
 .progress-bar {
-    width: 300px;
-    height: 20px;
-    border: 3px solid var(--bmo-text);
+    width: 320px;
+    height: 24px;
+    border: 4px solid var(--bmo-text);
     padding: 2px;
-    margin-top: 10px;
+    margin-top: 15px;
+    background-color: rgba(255,255,255,0.2);
 }
 
 #boot-progress {
@@ -108,10 +130,11 @@ body {
 
 /* Face Screen */
 #face-container {
-    width: 80%;
-    height: 80%;
+    width: 85%;
+    height: 85%;
     max-width: 800px;
     max-height: 600px;
+    position: relative;
 }
 
 #face-container svg {
@@ -119,56 +142,136 @@ body {
     height: 100%;
 }
 
+.face-instructions {
+    position: absolute;
+    bottom: 30px;
+    font-size: 0.75rem;
+    opacity: 0.75;
+}
+
+/* ===============================================
+   KONAMI SPIN - Animación CSS pura (sin GSAP)
+   No puede ser sobreescrita por ningún tween.
+   =============================================== */
+@keyframes konami-spin {
+    0%   { transform: rotate(0deg)   scale(1);    }
+    50%  { transform: rotate(180deg) scale(1.3);  }
+    100% { transform: rotate(360deg) scale(1);    }
+}
+
+#face-container.konami-spinning {
+    animation: konami-spin 1.2s ease-in-out forwards !important;
+}
+
+/* Salvapantallas oscuro para modo sueño */
+#bmo-container.bmo-sleeping {
+    filter: brightness(0.3);
+    transition: filter 3s ease-in-out;
+}
+
+#bmo-container.bmo-awake {
+    filter: brightness(1);
+    transition: filter 0.6s ease-out;
+}
+
+
 /* Menu Screen */
 #menu-screen h2 {
-    font-size: 3rem;
-    margin-bottom: 40px;
+    font-size: 2.2rem;
+    margin-bottom: 30px;
     text-shadow: 2px 2px 0px var(--bmo-highlight);
 }
 
 #menu-list {
     list-style: none;
-    text-align: center;
+    text-align: left;
+    width: 80%;
+    max-width: 520px;
 }
 
 .menu-item {
-    font-size: 1.5rem;
-    margin: 20px 0;
-    opacity: 0.5;
-    transition: opacity 0.2s, transform 0.2s;
+    font-size: 1.1rem;
+    margin: 14px 0;
+    padding: 10px 16px;
+    opacity: 0.6;
+    border-radius: 6px;
+    transition: all 0.2s ease;
 }
 
 .menu-item.selected {
     opacity: 1;
-    transform: scale(1.2);
-}
-
-.menu-item.selected::before {
-    content: "► ";
+    background-color: var(--bmo-text);
+    color: var(--bmo-highlight);
+    transform: translateX(10px);
 }
 
 .menu-instructions {
     position: absolute;
-    bottom: 40px;
-    font-size: 0.8rem;
-    opacity: 0.7;
+    bottom: 25px;
+    font-size: 0.7rem;
+    opacity: 0.8;
 }
 
 /* Game Screen */
 #game-canvas {
     background-color: var(--bmo-screen-dark);
-    border: 4px solid var(--bmo-text);
-    box-shadow: 5px 5px 0px rgba(0,0,0,0.2);
-    /* For responsive canvas scaling */
-    max-width: 90%;
-    max-height: 90%;
+    border: 5px solid var(--bmo-text);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    max-width: 95%;
+    max-height: 80%;
     object-fit: contain;
 }
 
-#close-instruction {
-    position: absolute;
-    bottom: 20px;
+.in-game-bar {
+    margin-top: 15px;
+    font-size: 0.7rem;
+    background-color: rgba(44, 76, 59, 0.9);
+    color: var(--bmo-highlight);
+    padding: 6px 16px;
+    border-radius: 6px;
+}
+
+/* Emotion Theater */
+.emotion-title {
+    font-size: 2rem;
+    margin-bottom: 12px;
+    text-shadow: 2px 2px 0px var(--bmo-highlight);
+}
+
+.emotion-subtitle {
     font-size: 0.8rem;
-    opacity: 0.7;
-    z-index: 6;
+    margin-bottom: 35px;
+    opacity: 0.85;
+}
+
+.emotion-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    width: 85%;
+    max-width: 480px;
+    margin-bottom: 40px;
+}
+
+.emo-btn {
+    background-color: var(--bmo-screen-dark);
+    border: 3px solid var(--bmo-text);
+    color: var(--bmo-text);
+    font-family: inherit;
+    font-size: 0.85rem;
+    padding: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.1s, background-color 0.1s;
+}
+
+.emo-btn:active, .emo-btn.active {
+    background-color: var(--bmo-text);
+    color: var(--bmo-highlight);
+    transform: scale(0.95);
+}
+
+.app-instructions {
+    font-size: 0.7rem;
+    opacity: 0.85;
 }

@@ -1,3 +1,6 @@
+/**
+ * BMO OS - Snake Game (Lógica y Renderizado Separados)
+ */
 class SnakeGame extends GameEngine {
     constructor(canvas) {
         super(canvas);
@@ -12,22 +15,31 @@ class SnakeGame extends GameEngine {
             cells: [],
             maxCells: 4
         };
-        this.apple = { x: 320, y: 320 };
+        this.spawnApple();
         this.score = 0;
+        this.highScore = this.getHighScore('snake');
+        this.isNewHigh = false;
         this.gameOver = false;
         this.soundPlayed = false;
+        this.particles = [];
+    }
+
+    spawnApple() {
+        const maxX = Math.floor(this.width / this.grid);
+        const maxY = Math.floor(this.height / this.grid);
+        this.apple = {
+            x: Math.floor(Math.random() * maxX) * this.grid,
+            y: Math.floor(Math.random() * maxY) * this.grid
+        };
     }
 
     update(controller) {
         if (this.gameOver) {
             if (!this.soundPlayed) {
                 audioManager.stopBgMusic();
-                if (this.score > 7) {
-                    audioManager.play('win');
-                } else {
-                    audioManager.play('lose');
-                }
+                audioManager.play(this.score > 7 ? 'win' : 'lose');
                 this.soundPlayed = true;
+                if (controller.triggerRumble) controller.triggerRumble(300, 0.8, 0.8);
             }
             if (controller.justPressed('a') || controller.justPressed('start')) {
                 audioManager.playBgMusic(true);
@@ -36,7 +48,7 @@ class SnakeGame extends GameEngine {
             return;
         }
 
-        // Handle Input
+        // Controles WASD / D-Pad
         if (controller.justPressed('left') && this.snake.dx === 0) {
             this.snake.dx = -this.grid;
             this.snake.dy = 0;
@@ -51,26 +63,65 @@ class SnakeGame extends GameEngine {
             this.snake.dy = this.grid;
         }
 
-        // Slower game speed
-        if (++this.count < 4) {
-            return;
-        }
+        // Velocidad de la serpiente
+        if (++this.count < 4) return;
         this.count = 0;
 
-        // Move snake
+        // Mover serpiente
         this.snake.x += this.snake.dx;
         this.snake.y += this.snake.dy;
 
-        // Wrap around screen
+        // Wrap around pantalla
         if (this.snake.x < 0) this.snake.x = this.width - this.grid;
         else if (this.snake.x >= this.width) this.snake.x = 0;
         if (this.snake.y < 0) this.snake.y = this.height - this.grid;
         else if (this.snake.y >= this.height) this.snake.y = 0;
 
-        // Keep track of where snake has been
         this.snake.cells.unshift({ x: this.snake.x, y: this.snake.y });
         if (this.snake.cells.length > this.snake.maxCells) {
             this.snake.cells.pop();
+        }
+
+        // Comer Manzana
+        const head = this.snake.cells[0];
+        if (head && head.x === this.apple.x && head.y === this.apple.y) {
+            this.snake.maxCells++;
+            this.score++;
+            if (this.saveHighScore('snake', this.score)) {
+                this.highScore = this.score;
+                this.isNewHigh = true;
+            }
+            
+            audioManager.playChiptuneSfx('eat');
+            if (controller.triggerRumble) controller.triggerRumble(80, 0.3, 0.4);
+
+            for (let i = 0; i < 8; i++) {
+                this.particles.push({
+                    x: this.apple.x + 10,
+                    y: this.apple.y + 10,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: (Math.random() - 0.5) * 6,
+                    alpha: 1
+                });
+            }
+
+            this.spawnApple();
+        }
+
+        // Colisión con propio cuerpo
+        for (let i = 1; i < this.snake.cells.length; i++) {
+            if (head && head.x === this.snake.cells[i].x && head.y === this.snake.cells[i].y) {
+                this.gameOver = true;
+            }
+        }
+
+        // Actualizar Partículas
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+            let p = this.particles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.alpha -= 0.05;
+            if (p.alpha <= 0) this.particles.splice(i, 1);
         }
     }
 
@@ -78,38 +129,31 @@ class SnakeGame extends GameEngine {
         this.clear();
 
         if (this.gameOver) {
-            this.drawText('GAME OVER', this.width / 2, this.height / 2, '40px');
-            this.drawText('Puntos: ' + this.score, this.width / 2, this.height / 2 + 40, '20px');
-            this.drawText('Presiona J para reiniciar', this.width / 2, this.height / 2 + 80, '15px');
+            this.drawText('GAME OVER', this.width / 2, this.height / 2 - 30, '35px');
+            this.drawText('Puntos: ' + this.score, this.width / 2, this.height / 2 + 20, '20px');
+            this.drawText('Récord: ' + this.highScore, this.width / 2, this.height / 2 + 50, '16px');
+            this.drawText('Presiona J o A para reiniciar', this.width / 2, this.height / 2 + 90, '14px');
             return;
         }
 
-        // Draw Apple
+        // Manzana
         this.ctx.fillStyle = this.colors.fg;
-        this.ctx.fillRect(this.apple.x, this.apple.y, this.grid - 1, this.grid - 1);
+        this.ctx.fillRect(this.apple.x + 1, this.apple.y + 1, this.grid - 2, this.grid - 2);
 
-        // Draw Snake
-        this.ctx.fillStyle = this.colors.fg;
-        this.snake.cells.forEach((cell, index) => {
-            this.ctx.fillRect(cell.x, cell.y, this.grid - 1, this.grid - 1);
-
-            // Eat Apple
-            if (cell.x === this.apple.x && cell.y === this.apple.y) {
-                this.snake.maxCells++;
-                this.score++;
-                this.apple.x = Math.floor(Math.random() * (this.width / this.grid)) * this.grid;
-                this.apple.y = Math.floor(Math.random() * (this.height / this.grid)) * this.grid;
-            }
-
-            // Collision with itself
-            for (let i = index + 1; i < this.snake.cells.length; i++) {
-                if (cell.x === this.snake.cells[i].x && cell.y === this.snake.cells[i].y) {
-                    this.gameOver = true;
-                }
-            }
+        // Partículas
+        this.particles.forEach(p => {
+            this.ctx.fillStyle = `rgba(44, 76, 59, ${p.alpha})`;
+            this.ctx.fillRect(p.x, p.y, 4, 4);
         });
 
-        // Score
-        this.drawText(this.score, 30, 40, '20px', 'left');
+        // Serpiente
+        this.snake.cells.forEach((cell, index) => {
+            this.ctx.fillStyle = index === 0 ? '#1b3226' : this.colors.fg;
+            this.ctx.fillRect(cell.x + 1, cell.y + 1, this.grid - 2, this.grid - 2);
+        });
+
+        // HUD
+        this.drawText('PTS: ' + this.score, 20, 35, '16px', 'left');
+        this.drawText('MAX: ' + this.highScore, this.width - 20, 35, '16px', 'right');
     }
 }
