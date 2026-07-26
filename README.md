@@ -1,72 +1,73 @@
-# 🤖 BMO OS (Español) - Recreación Interactiva Web
+# BMO OS (Español) - Recreación Interactiva Web
 
-Una recreación interactiva de la pantalla y consola de **BMO (Hora de Aventura)** construida para la web con HTML, CSS3, JavaScript Vanilla y GSAP.
+Una recreación interactiva de la interfaz de BMO de Hora de Aventura construida para la web con HTML, CSS3, JavaScript Vanilla y GSAP.
 
-Contiene efectos de sonido, voces reales en español, animaciones expresivas, teatro de emociones y 5 minijuegos retro integrados con soporte completo para teclado y mandos arcade / consolas (Xbox, PlayStation, Nintendo Switch y Mandos USB).
-
----
-
-## 🎮 Características Principales
-
-- 🤖 **BMO Interactivo**: Expresiones animadas con físicas suaves mediante GSAP.
-- 🗣️ **Voces Oficiales en Español**: Sincronización labial dinámica de la boca al hablar con frases icónicas de BMO (*"¡Sí BMO!"*, *"Risa qué loco"*, *"Hola familia"*, *"Asalto"*, *"Tu eres mi abuelito"*, *"Pequeño chiste"*, etc.).
-- 🕹️ **Soporte de Mandos y Teclado en Tiempo Real**:
-  - Detección automática y guías de botones 3D dinámicas en pantalla según el dispositivo activo (**Teclado**, **Xbox**, **PlayStation**, **Nintendo Switch**, **Mando USB**).
-  - Efectos de vibración (*Haptic Feedback*) para mandos compatibles.
-- 👾 **5 Minijuegos Retro Incluidos**:
-  1. **Snake BMO**: El clásico juego de la serpiente ajustado con la paleta retro de BMO.
-  2. **BMO Fly**: Esquiva tuberías y surca los cielos.
-  3. **BMO Pac-Man**: Come laberintos con 4 fantasmas (*Blinky*, *Pinky*, *Inky* y *Clyde*).
-  4. **Guardians of Sunshine**: Enfréntate a los tres guardianes y vence al jefe final.
-  5. **BMO Pong**: Desafía a la IA de BMO en una partida de Pong.
-- 🎭 **Teatro de Emociones**: Selecciona y activa cualquier expresión o baile de BMO.
+Contiene efectos de audio con frases reales en español, expresiones animadas, reacciones por puntaje, teatro de emociones y 5 minijuegos retro integrados con soporte para teclado y mandos (Xbox, PlayStation, Nintendo Switch y mandos USB).
 
 ---
 
-## 🕹️ Controles
+## Características Principales
+
+- **Expresiones e Interactividad**: Animaciones faciales suaves utilizando GSAP para estados de inactividad, habla y emociones.
+- **Audio en Español**: Sincronización labial al reproducir frases icónicas de BMO.
+- **Soporte de Mandos y Teclado**: Detección automática en tiempo real con guías de botones adaptativas (Teclado, Xbox, PlayStation, Switch y USB).
+- **Minijuegos Retro Integrados**:
+  1. Snake BMO
+  2. BMO Fly
+  3. BMO Pac-Man
+  4. Guardians of Sunshine
+  5. BMO Pong
+- **Modo Sueño y Guardado de Récords**: Estado de ahorro de energía y persistencia local de puntuaciones máximas.
+
+---
+
+## Controles
 
 | Acción | Teclado | Mando Xbox / USB | PlayStation | Nintendo Switch |
 | :--- | :---: | :---: | :---: | :---: |
-| **Navegación (D-Pad)** | `W` `A` `S` `D` / `Flechitas` | `D-Pad` / `Stick Izq` | `D-Pad` / `Stick Izq` | `D-Pad` / `Stick Izq` |
-| **Botón A (Entrar / Acción)** | `J` / `Espacio` / `Enter` | `A` | `✕` | `A` |
-| **Botón B (Atrás / Salir)** | `K` / `Backspace` | `B` | `◯` | `B` |
-| **Botón Start (Menú Principal)** | `L` | `START` | `OPTIONS` | `+` |
+| **Navegación** | W / A / S / D / Flechas | D-Pad / Stick Izquierdo | D-Pad / Stick Izquierdo | D-Pad / Stick Izquierdo |
+| **Aceptar / Acción** | J / Espacio / Enter | A | ✕ | A |
+| **Atrás / Cancelar** | K / Backspace | B | ◯ | B |
+| **Menú Principal** | L | START | OPTIONS | + |
 
 ---
 
-## 📸 Capturas de Pantalla
+## Capturas del Proyecto
 
-### 🤖 Cara de BMO
-![BMO Face](assets/img/bmo_face.png)
+### Pantalla de carga
+![Pantalla de carga](assets/img/bmo_carga.png)
 
-### 🕹️ Menú Principal
-![BMO Menu](assets/img/bmo_menu.png)
+### Cara de BMO
+![Cara de BMO](assets/img/bmo_cara.png)
 
-### 🐍 Snake BMO
-![BMO Snake](assets/img/bmo_snake.png)
+### Menú general
+![Menú general](assets/img/bmo_menu_general.png)
 
-### 🐤 BMO Fly
-![BMO Fly](assets/img/bmo_fly.png)
+### BMO Fly
+![BMO Fly](assets/img/bmo_fly_game.png)
 
-### 👻 BMO Pac-Man
-![BMO Pacman](assets/img/bmo_pacman.png)
+### Pantalla de Game Over
+![Pantalla de Game Over](assets/img/bmo_gameover.png)
 
-### ☀️ Guardians of Sunshine
-![BMO Guardians](assets/img/bmo_guardians.png)
+### Pacman
+![Pacman](assets/img/bmo_pacman_game.png)
 
-### 🏓 BMO Pong
-![BMO Pong](assets/img/bmo_pong.png)
+### Los Guardianes
+![Los Guardianes](assets/img/bmo_guardianes.png)
 
-### 🎭 Teatro de Emociones
-![BMO Emociones](assets/img/bmo_emotions.png)
+### Los Guardianes (Jefe final)
+![Los Guardianes - Jefe final](assets/img/bmo_jefe.png)
+
+### BMO dormido
+![BMO dormido](assets/img/bmo_dormido.png)
 
 ---
 
-## 🚀 Cómo Ejecutar
+## Instalación y Ejecución
 
-1. Clona el repositorio:
+1. Clonar el repositorio:
    ```bash
    git clone https://github.com/k100fuegos/BMO.git
    ```
-2. Abre `index.html` en cualquier navegador moderno (*Chrome, Edge, Firefox, Brave*).
-3. ¡Haz un clic inicial o presiona cualquier botón para encender a BMO!
+2. Abrir `index.html` en un navegador web.
+3. Presionar cualquier tecla o hacer clic en la pantalla para iniciar.
