@@ -275,7 +275,7 @@ class GuardiansGame extends GameEngine {
             this.drawText('GAME OVER', this.width / 2, this.height / 2 - 30, '35px');
             this.drawText('Puntos: ' + this.score, this.width / 2, this.height / 2 + 20, '20px');
             this.drawText('Récord: ' + this.highScore, this.width / 2, this.height / 2 + 50, '16px');
-            this.drawText('Presiona J o A para reiniciar', this.width / 2, this.height / 2 + 90, '14px');
+            this.drawRestartPrompt(this.width / 2, this.height / 2 + 90);
             return;
         }
 

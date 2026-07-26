@@ -308,13 +308,13 @@ class PacmanLiteGame extends GameEngine {
             this.ctx.fillRect(0, this.height/2 - 70, this.width, 140);
             this.drawText('GAME OVER', this.width / 2, this.height / 2 - 15, '30px');
             this.drawText('PTS: ' + this.score + ' | MAX: ' + this.highScore, this.width / 2, this.height / 2 + 20, '14px');
-            this.drawText('Presiona J o A', this.width / 2, this.height / 2 + 50, '14px');
+            this.drawRestartPrompt(this.width / 2, this.height / 2 + 50);
         } else if (this.win) {
             this.ctx.fillStyle = 'rgba(143, 173, 138, 0.95)';
             this.ctx.fillRect(0, this.height/2 - 70, this.width, 140);
             this.drawText('¡VICTORIA!', this.width / 2, this.height / 2 - 15, '30px');
             this.drawText('Puntos: ' + this.score, this.width / 2, this.height / 2 + 20, '16px');
-            this.drawText('Presiona J o A', this.width / 2, this.height / 2 + 50, '14px');
+            this.drawRestartPrompt(this.width / 2, this.height / 2 + 50);
         } else {
             // Barra de información en la parte inferior del canvas
             this.ctx.fillStyle = 'rgba(27, 50, 38, 0.85)';

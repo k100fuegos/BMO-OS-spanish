@@ -152,7 +152,7 @@ class PongGame extends GameEngine {
         if (this.gameOver) {
             this.drawText(this.winner === 'JUGADOR' ? '¡GANASTE!' : 'BMO GANA', this.width / 2, this.height / 2 - 30, '35px');
             this.drawText(`${this.player.score} - ${this.ai.score}`, this.width / 2, this.height / 2 + 20, '25px');
-            this.drawText('Presiona J o A para reiniciar', this.width / 2, this.height / 2 + 70, '14px');
+            this.drawRestartPrompt(this.width / 2, this.height / 2 + 70);
             return;
         }
 

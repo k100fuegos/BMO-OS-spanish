@@ -253,25 +253,112 @@ body {
     margin-bottom: 40px;
 }
 
+/* Rediseño 3D Arcade para Botones de Emociones (.emo-btn) */
 .emo-btn {
     background-color: var(--bmo-screen-dark);
     border: 3px solid var(--bmo-text);
     color: var(--bmo-text);
     font-family: inherit;
-    font-size: 0.85rem;
-    padding: 16px;
-    border-radius: 8px;
+    font-size: 0.8rem;
+    padding: 12px 18px;
+    border-radius: 10px;
+    box-shadow: 0 4px 0 #15271d;
     cursor: pointer;
-    transition: transform 0.1s, background-color 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: transform 0.1s ease, background-color 0.1s ease, box-shadow 0.1s ease;
+}
+
+.emo-btn:hover {
+    background-color: #274535;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 #15271d;
 }
 
 .emo-btn:active, .emo-btn.active {
     background-color: var(--bmo-text);
     color: var(--bmo-highlight);
-    transform: scale(0.95);
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 #15271d;
+}
+
+.emo-btn.active .bmo-badge {
+    border-color: var(--bmo-highlight);
 }
 
 .app-instructions {
-    font-size: 0.7rem;
-    opacity: 0.85;
+    font-size: 0.75rem;
+    opacity: 0.9;
+}
+
+/* ===============================================
+   RETRO 3D BUTTON BADGES (CIRCULARES / FLECHITAS / PILLS)
+   =============================================== */
+.bmo-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 8px;
+    border-radius: 14px;
+    background: #1b3226;
+    color: #d0f0c0;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.65rem;
+    font-weight: bold;
+    line-height: 1;
+    text-align: center;
+    border: 2px solid #2c4c3b;
+    box-shadow: 0 3px 0 #0f1c15, inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    margin: 0 4px;
+    vertical-align: middle;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+    user-select: none;
+}
+
+/* Badges pequeños para flechitas y direcciones */
+.bmo-badge.sm, .bmo-badge.badge-arrow {
+    min-width: 24px;
+    height: 24px;
+    padding: 0 4px;
+    font-size: 0.55rem;
+    margin: 0 2px;
+    border-radius: 50%;
+    background: #234232;
+    border-color: #38614a;
+    box-shadow: 0 2px 0 #112219, inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.arrow-group {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 4px;
+}
+
+.bmo-badge.badge-a {
+    background: #257545;
+    color: #ffffff;
+    border-color: #d0f0c0;
+    box-shadow: 0 3px 0 #154529, inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.bmo-badge.badge-b {
+    background: #8b3434;
+    color: #ffffff;
+    border-color: #ffb6b6;
+    box-shadow: 0 3px 0 #521e1e, inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.bmo-badge.badge-start {
+    background: #2c4c3b;
+    color: #d0f0c0;
+    border-color: #8fad8a;
+    box-shadow: 0 3px 0 #16261d, inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.bmo-badge:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 #0f1c15;
 }
